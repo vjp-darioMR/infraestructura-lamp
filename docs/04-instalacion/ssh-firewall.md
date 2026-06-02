@@ -424,3 +424,8 @@ sudo ssh-keygen -A
 | Firewall | UFW activo |
 | Protección fuerza bruta | Fail2Ban activo |
 | Direcciones permitidas | IPs de oficina 192.168.1.0/24 |
+## Configuración de firewall con UFW
+- `ufw default deny incoming`
+- `ufw allow 22/tcp`   # SSH para administración
+- `ufw allow 80,443/tcp`  # Web
+- `ufw enable`
