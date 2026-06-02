@@ -34,7 +34,8 @@ flowchart LR
 | Componente | Versión | Función |
 |-----------|---------|---------|
 | Linux | Ubuntu 22.04 LTS | Sistema Operativo |
-| Apache | 2.4.59 | Servidor Web |
+| Apache | 2.4.60 | Servidor Web (versión actualizada) |
+| Certbot | 2.9 | SSL/TLS automático (añadido) |
 | PHP | 8.x | Lenguaje de Programación |
 | MySQL | 8.0 | Base de Datos |
 | UFW | - | Firewall |
