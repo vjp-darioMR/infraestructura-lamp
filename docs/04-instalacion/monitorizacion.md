@@ -85,8 +85,8 @@ graph TB
 
 ### 3.1 Descargar e instalar
 ```bash
-wget -O /tmp/netdata-kickstart.sh https://get.netdata.cloud/kickstart.sh
-sh /tmp/netdata-kickstart.sh --stable-channel --disable-telemetry
+wget -O /tmp/netdata-kickstart.sh https://get.netdata.io/kickstart.sh
+sh /tmp/netdata-kickstart.sh --stable-channel --disable-telemetry --install /opt
 ```
 
 ### 3.2 Alternativa con apt (en Ubuntu)

@@ -36,9 +36,9 @@ graph LR
     RETENTION["🔄 Rotación<br/>Automática"]
     VERIFY --> RETENTION
     
-    RETENTION -->|7 días| DAILY_DEL["Borrar Diarios"]
+    RETENTION -->|1 día| DAILY_DEL["Borrar Diarios"]
     RETENTION -->|4 semanas| WEEKLY_DEL["Borrar Semanales"]
-    RETENTION -->|12 meses| KEEP["Mantener Mensuales"]
+    RETENTION -->|6 meses| KEEP["Mantener Mensuales"]
     
     DAILY_DEL --> CLEANUP["🧹 Limpieza"]
     WEEKLY_DEL --> CLEANUP
@@ -72,9 +72,9 @@ graph LR
 - **Mensuales**: Respaldos completos, primer domingo
 
 ### 2.2 Retención
-- Diarios: 7 días
+- Diarios: 24 horas
 - Semanales: 4 semanas
-- Mensuales: 12 meses
+- Mensuales: 6 meses
 
 ### 2.3 Ubicación
 - Almacenamiento local: `/home/backups/`
@@ -261,12 +261,12 @@ tar -xzf /home/backups/www/diarios/web_20240101_030000.tar.gz -C /
 ## 10. Tabla de Backups
 
 | Tipo | Frecuencia | Retención | Ubicación |
-|------|-----------|-----------|-----------|
-| MySQL | Diario | 7 días | /home/backups/mysql |
-| Web | Diario | 7 días | /home/backups/www |
+|------|-----------|-----------|
+| MySQL | Diario | 1 día | /home/backups/mysql |
+| Web | Diario | 1 día | /home/backups/www |
 | Config | Semanal | 4 semanas | /home/backups/config |
 | Incremental | Diario | 30 días | /home/backups/incremental |
-| Remoto | Semanal | 12 meses | NAS/Cloud |
+| Remoto | Semanal | 6 meses | NAS/Cloud |
 
 ## 11. Solución de Problemas
 
