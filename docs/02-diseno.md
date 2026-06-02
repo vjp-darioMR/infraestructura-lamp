@@ -25,3 +25,18 @@ flowchart LR
     D[Administrador] -->|SSH| B
     B -->|Métricas| E[Monitorización<br>Netdata]
     B -->|Backups| F[Servidor de copias<br>rsync / almacenamiento]
+```
+
+---
+
+## 3. Componentes del Sistema
+
+| Componente | Versión | Función |
+|-----------|---------|---------|
+| Linux | Ubuntu 22.04 LTS | Sistema Operativo |
+| Apache | 2.4.60 | Servidor Web |
+| PHP | 8.x | Lenguaje de Programación |
+| MySQL | 8.0 | Base de Datos |
+| UFW | - | Firewall |
+| OpenSSH | 8.x | Acceso Remoto |
+| Netdata | Última | Monitorización |
