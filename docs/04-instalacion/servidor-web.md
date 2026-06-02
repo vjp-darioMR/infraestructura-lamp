@@ -271,15 +271,120 @@ sudo systemctl restart apache2
 sudo systemctl status apache2
 ```
 
-## 14. Checklista de Configuración
+## 14. Integración con Balanceador de Carga HAProxy
+
+El cliente ha solicitado la incorporación de un balanceador de carga **HAProxy** por delante del servidor web Apache. Para que esta integración funcione correctamente, Apache debe dejar libre el puerto `80` y pasar a escuchar en el puerto interno `8080`, mientras que HAProxy escuchará en el puerto `80` para recibir el tráfico de red y balancearlo/redirigirlo.
+
+```mermaid
+flowchart TD
+    User([Usuario Externo]) -->|Puerto 80 / HTTP| HAP[HAProxy Load Balancer]
+    HAP -->|Redirección Puerto 8080| Apache[Apache Web Server]
+    Apache -->|Ejecución PHP| PHP[PHP 8.1]
+```
+
+### 14.1 Instalación de HAProxy
+Instalar el balanceador de carga en Ubuntu Server:
+```bash
+sudo apt update
+sudo apt install haproxy -y
+```
+
+### 14.2 Reconfiguración de Puertos en Apache
+Para evitar conflictos de puertos en el mismo servidor:
+
+1.  **Modificar el puerto de escucha global**:
+    Editar el archivo `/etc/apache2/ports.conf`:
+    ```bash
+    sudo nano /etc/apache2/ports.conf
+    ```
+    Cambiar la directiva `Listen 80` por:
+    ```apache
+    Listen 8080
+    ```
+
+2.  **Actualizar el Virtual Host del sitio**:
+    Editar `/etc/apache2/sites-available/miempresa.com.conf`:
+    ```bash
+    sudo nano /etc/apache2/sites-available/miempresa.com.conf
+    ```
+    Modificar la cabecera `<VirtualHost *:80>` para que escuche en el nuevo puerto:
+    ```apache
+    <VirtualHost *:8080>
+        # (El resto de la configuración del Virtual Host se mantiene igual)
+    ```
+
+3.  **Configurar mod_remoteip (Reenvío de IPs reales)**:
+    Como el tráfico ahora pasa por el proxy, por defecto los logs de Apache registrarían que todas las peticiones provienen de la IP del proxy (`127.0.0.1`). Habilitamos `mod_remoteip` para resolver esto:
+    ```bash
+    sudo a2enmod remoteip
+    ```
+    Crear el archivo de configuración del módulo `/etc/apache2/conf-available/remoteip.conf`:
+    ```bash
+    sudo nano /etc/apache2/conf-available/remoteip.conf
+    ```
+    Añadir el siguiente contenido indicando que confíe en las peticiones locales enviadas por HAProxy:
+    ```apache
+    RemoteIPHeader X-Forwarded-For
+    RemoteIPTrustedProxy 127.0.0.1
+    ```
+    Habilitar la configuración y modificar el formato de log predeterminado en `/etc/apache2/apache2.conf` cambiando `%h` por `%a` en las líneas de LogFormat:
+    ```bash
+    sudo a2enconf remoteip
+    ```
+
+4.  **Verificar y reiniciar Apache**:
+    ```bash
+    sudo apache2ctl configtest
+    sudo systemctl restart apache2
+    ```
+
+### 14.3 Configuración de HAProxy
+Editar el archivo `/etc/haproxy/haproxy.cfg`:
+```bash
+sudo nano /etc/haproxy/haproxy.cfg
+```
+
+Añadir la configuración del frontend y backend al final de la sección por defecto:
+```haproxy
+frontend http_front
+    bind *:80
+    mode http
+    option forwardfor
+    default_backend apache_backend
+
+backend apache_backend
+    mode http
+    balance roundrobin
+    option httpchk GET /index.php
+    http-check expect status 200
+    server web-apache 127.0.0.1:8080 check
+```
+
+### 14.4 Iniciar y Habilitar HAProxy
+```bash
+# Validar la sintaxis del archivo de configuración
+haproxy -c -f /etc/haproxy/haproxy.cfg
+
+# Iniciar y habilitar servicio en el arranque
+sudo systemctl enable haproxy
+sudo systemctl start haproxy
+```
+
+---
+
+## 15. Checklist de Configuración
 
 - ✓ Apache instalado y habilitado
 - ✓ PHP 8.x instalado con módulos necesarios
-- ✓ Virtual host configurado
+- ✓ Virtual host de Apache reconfigurado en el puerto `8080`
+- ✓ Módulo `mod_remoteip` activo en Apache para logs de IP real
 - ✓ Certificado SSL instalado
 - ✓ Módulos de rendimiento habilitados
 - ✓ Logs configurados y accesibles
 - ✓ Permisos correctos en /var/www
-- ✓ Firewall permite puertos 80 y 443
-- ✓ Sitio accesible en HTTP y HTTPS
-- ✓ PHP funciona correctamente
+- ✓ Balanceador de carga HAProxy instalado y habilitado en puerto `80`
+- ✓ HAProxy configurado con balanceo roundrobin apuntando al puerto `8080`
+- ✓ Firewall permite puertos 80, 443 y 19999
+- ✓ Sitio accesible a través del balanceador HAProxy en HTTP
+- ✓ PHP funciona correctamente a través del proxy
+

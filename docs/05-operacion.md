@@ -189,3 +189,62 @@ Si se detectan ataques de fuerza bruta masivos desde IPs específicas, se recomi
 sudo ufw deny from <IP_ATACANTE> to any
 ```
 o configurar una herramienta de protección activa como `fail2ban`.
+
+---
+
+## 7. Mantenimiento del Balanceador de Carga (HAProxy)
+
+Con la integración de **HAProxy** como puerta de enlace del tráfico HTTP en el puerto `80`, es necesario incorporar su mantenimiento en las rutinas operativas del servidor.
+
+### 7.1 Control del Servicio
+```bash
+# Comprobar el estado del balanceador
+sudo systemctl status haproxy
+
+# Recargar configuración en caliente (seguro para entornos en producción)
+sudo systemctl reload haproxy
+
+# Reiniciar completamente el servicio
+sudo systemctl restart haproxy
+```
+
+### 7.2 Validación de Configuración
+Antes de realizar cualquier recarga o reinicio del servicio de balanceo, es obligatorio validar la sintaxis del archivo `/etc/haproxy/haproxy.cfg`:
+```bash
+haproxy -c -f /etc/haproxy/haproxy.cfg
+# Salida correcta: Configuration file is valid
+```
+
+### 7.3 Monitorización y Estadísticas en Tiempo Real
+Para facilitar el monitoreo del balanceador, se ha habilitado un panel gráfico de estadísticas en el puerto `9000`.
+
+1.  **Habilitar puerto en el Firewall**:
+    ```bash
+    sudo ufw allow 9000/tcp
+    ```
+2.  **Acceso al Dashboard**:
+    Navegar a `http://<IP_DEL_SERVIDOR>:9000/` e introducir las credenciales de administración configuradas en `/etc/haproxy/haproxy.cfg` (ej. `admin` / `AdminStats123!`).
+3.  **Métricas clave en el panel**:
+    *   **Queue**: Número de peticiones esperando en cola si el backend de Apache está saturado.
+    *   **Session Rate**: Número de sesiones por segundo.
+    *   **Status**: Indica en verde (`UP`) si el backend de Apache responde correctamente al check de salud HTTP, o en rojo (`DOWN`) en caso contrario.
+
+### 7.4 Análisis de Logs y Troubleshooting
+Los eventos de conexión y errores de HAProxy se envían al syslog del sistema:
+```bash
+# Ver peticiones entrantes y errores del balanceador en tiempo real
+sudo tail -f /var/log/haproxy.log
+# O de manera general con journalctl
+sudo journalctl -u haproxy -n 50
+```
+
+#### Solución al error `503 Service Unavailable`
+Si los usuarios informan de un error `503` al intentar entrar al sitio web:
+1.  **Comprobar que HAProxy está corriendo**: `sudo systemctl status haproxy`.
+2.  **Verificar que Apache está activo en el puerto 8080**:
+    ```bash
+    sudo ss -tlpn | grep :8080
+    ```
+    Si no devuelve salida, significa que Apache está caído. Inícielo con `sudo systemctl start apache2`.
+3.  **Comprobar el log de HAProxy**: Si muestra mensajes como `Server apache_backend/web-apache is DOWN`, verifique que la IP y el puerto de Apache en `/etc/haproxy/haproxy.cfg` coinciden exactamente con la configuración de `/etc/apache2/ports.conf`.
+

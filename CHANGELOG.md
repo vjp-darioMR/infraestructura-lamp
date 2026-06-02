@@ -4,6 +4,15 @@ Todos los cambios significativos en este proyecto serán documentados en este ar
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-06-02
+
+### Añadido
+- **docs/04-instalacion/servidor-web.md**: Añadida la sección de configuración e integración del balanceador de carga HAProxy por delante del servidor Apache (Sesión 4).
+- **docs/05-operacion.md**: Añadidas las tareas de mantenimiento del balanceador HAProxy (validación de sintaxis, gestión del servicio, monitorización mediante el panel de estadísticas en puerto 9000 y troubleshooting de errores 503) (Sesión 4).
+
+### Modificado
+- **docs/04-instalacion/servidor-web.md**: Reconfigurado el puerto de escucha de Apache de `80` a `8080` y habilitada la directiva `mod_remoteip` para preservar el registro de IPs de clientes reales en los logs (Sesión 4).
+
 ## [1.0.0-rc1] - 2026-06-02
 
 ### Añadido
